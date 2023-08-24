@@ -9,14 +9,14 @@
       href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
     />
     <link rel="stylesheet" href="style.css" />
-    <title>Seller's Dashboard</title>
+    <title>Expense Tracker</title>
   </head>
   <body>
     <div class="container mt-5">
-      <h1>DashBoard</h1>
+      <h1>Your Expense Tracker</h1>
       <form id="expense-form">
         <div class="form-group">
-          <label for="amount">Selling Price</label>
+          <label for="amount">Amount</label>
           <input
             type="number"
             class="form-control"
@@ -25,23 +25,24 @@
           />
         </div>
         <div class="form-group">
-          <label for="description">Product Name</label>
+          <label for="description">Description</label>
           <input
             type="text"
             class="form-control"
             id="description"
-            placeholder="Enter Product Name"
+            placeholder="Enter Description"
           />
         </div>
         <div class="form-group">
           <label for="category">Category</label>
           <select class="form-control" id="category">
             <option>Food</option>
-            <option>Electronics</option>
-            <option>Skin Care</option>
+            <option>Fuel</option>
+            <option>Electricity</option>
+            <option>Movies</option>
           </select>
         </div>
-        <button type="submit" class="btn btn-primary">Add Product</button>
+        <button type="submit" class="btn btn-primary">Add Expense</button>
       </form>
       <table class="table mt-3">
         <thead>
@@ -56,6 +57,8 @@
       </table>
     </div>
     <script>
+
+
       function saveExpense(amount, description, category) {
         fetch("/user", {
           method: "POST",
@@ -74,34 +77,34 @@
       }
 
       function addExpense(expense) {
-        const expenseList = document.getElementById("expense-list");
+    const expenseList = document.getElementById("expense-list");
 
-        const row = document.createElement("tr");
-        row.id = `expense-${expense.id}`;
+    const row = document.createElement("tr");
+    row.id = `expense-${expense.id}`;
 
-        const amountCell = document.createElement("td");
-        const descriptionCell = document.createElement("td");
-        const categoryCell = document.createElement("td");
-        const deleteCell = document.createElement("td");
-        const deleteButton = document.createElement("button");
+    const amountCell = document.createElement("td");
+    const descriptionCell = document.createElement("td");
+    const categoryCell = document.createElement("td");
+    const deleteCell = document.createElement("td");
+    const deleteButton = document.createElement("button");
 
-        amountCell.textContent = expense.amount;
-        descriptionCell.textContent = expense.description;
-        categoryCell.textContent = expense.category;
+    amountCell.textContent = expense.amount;
+    descriptionCell.textContent = expense.description;
+    categoryCell.textContent = expense.category;
 
-        deleteButton.textContent = "Delete";
-        deleteButton.classList.add("btn", "btn-danger", "btn-sm");
-        deleteButton.addEventListener("click", () => {
-          deleteExpense(expense.id);
-        });
+    deleteButton.textContent = "Delete";
+    deleteButton.classList.add("btn", "btn-danger", "btn-sm");
+    deleteButton.addEventListener("click", () => {
+        deleteExpense(expense.id);
+    });
 
-        deleteCell.appendChild(deleteButton);
-        row.appendChild(amountCell);
-        row.appendChild(descriptionCell);
-        row.appendChild(categoryCell);
-        row.appendChild(deleteCell);
-        expenseList.appendChild(row);
-      }
+    deleteCell.appendChild(deleteButton);
+    row.appendChild(amountCell);
+    row.appendChild(descriptionCell);
+    row.appendChild(categoryCell);
+    row.appendChild(deleteCell);
+    expenseList.appendChild(row);
+}
 
       function deleteExpense(id) {
         fetch(`/user/${id}`, {
@@ -115,9 +118,9 @@
           .catch((error) => console.error("Error deleting user:", error));
       }
 
-      function removeExpense(id) {
+      function removeExpense(id){
         const expenseElement = document.getElementById(`expense-${id}`);
-        if (expenseElement) {
+        if(expenseElement){
           expenseElement.remove();
         }
       }
@@ -129,24 +132,20 @@
         fetch("/user")
           .then((response) => response.json())
           .then((expenses) => {
-            // Sort expenses by category
-            expenses.sort((a, b) => a.category.localeCompare(b.category));
-
-            let previousCategory = null;
-
             expenses.forEach((expense) => {
               const row = document.createElement("tr");
               row.id = `expense-${expense.id}`;
 
               const amountCell = document.createElement("td");
               const descriptionCell = document.createElement("td");
-              //const  = document.createElement("td");
+              const categoryCell = document.createElement("td");
+              /*const editCell = document.createElement("td");*/ 
               const deleteCell = document.createElement("td");
               const deleteButton = document.createElement("button");
 
               amountCell.textContent = expense.amount;
               descriptionCell.textContent = expense.description;
-              //categoryCell.textContent = expense.category;
+              categoryCell.textContent = expense.category;
 
               deleteButton.textContent = "Delete";
               deleteButton.classList.add("btn", "btn-danger", "btn-sm");
@@ -154,55 +153,66 @@
                 deleteExpense(expense.id);
               });
 
+              /*const editButton = document.createElement("button");
+              editButton.textContent = "Edit";
+              editButton.classList.add(
+                "btn",
+                "btn-secondary",
+                "btn-sm",
+                "ml-2"
+              );
+              editButton.addEventListener("click", () => {
+                amountInput.value = expense.amount;
+                descriptionInput.value = expense.description;
+                categoryInput.value = expense.category;
+                expense.splice(index, 1);
+                localStorage.setItem("expenses", JSON.stringify(expenses));
+                displayExpenses();
+              });*/
+
+              /*editCell.appendChild(editButton);
+              editCell.appendChild(deleteButton);*/
               deleteCell.appendChild(deleteButton);
               row.appendChild(amountCell);
               row.appendChild(descriptionCell);
-              //row.appendChild(categoryCell);
+              row.appendChild(categoryCell);
+              /*row.appendChild(editCell);*/
               row.appendChild(deleteCell);
-
-              if (previousCategory !== expense.category) {
-                // Display the category name as a row
-                const categoryRow = document.createElement("tr");
-                const categoryCell = document.createElement("td");
-                categoryCell.colSpan = 4; // Span all columns
-                categoryCell.textContent = expense.category;
-                categoryCell.style.fontWeight = "bold";
-                categoryRow.appendChild(categoryCell);
-                expenseList.appendChild(categoryRow);
-                previousCategory = expense.category;
-              }
-
               expenseList.appendChild(row);
             });
           })
-          .catch((error) => console.error("Error fetching expenses:", error));
+          .catch(error => console.error('Error fetching expenses:', error));
       }
 
-      const form = document.getElementById("expense-form");
-      form.addEventListener("submit", function (event) {
+      const form = document.getElementById('expense-form');
+      form.addEventListener('submit', function(event){
         event.preventDefault();
 
         const amountInput = parseFloat(amount.value);
         const descriptionInput = description.value;
         const categoryInput = category.value;
 
-        if (amount === "" || description === "" || category === "") {
-          alert("Please enter amount, description and category properly");
-          return;
+        if(amount === '' || description === '' || category ===''){
+          alert('Please enter amount, description and category properly');
+          return ;
         }
-
+        
         saveExpense(amountInput, descriptionInput, categoryInput);
         form.reset();
 
-        /*addExpense({
-          id: "",
+        addExpense({
+          id: '',
           amount: amountInput,
           description: descriptionInput,
           category: categoryInput,
-        });*/
+        });
       });
 
       displayExpenses();
+
+
+
+
     </script>
   </body>
 </html>
