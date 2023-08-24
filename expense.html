@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <title>Seller's Dashboard</title>
+  </head>
+  <body>
+    <div class="container mt-5">
+      <h1>DashBoard</h1>
+      <form id="expense-form">
+        <div class="form-group">
+          <label for="amount">Selling Price</label>
+          <input
+            type="number"
+            class="form-control"
+            id="amount"
+            placeholder="Enter your amount"
+          />
+        </div>
+        <div class="form-group">
+          <label for="description">Product Name</label>
+          <input
+            type="text"
+            class="form-control"
+            id="description"
+            placeholder="Enter Product Name"
+          />
+        </div>
+        <div class="form-group">
+          <label for="category">Category</label>
+          <select class="form-control" id="category">
+            <option>Food</option>
+            <option>Electronics</option>
+            <option>Skin Care</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Product</button>
+      </form>
+      <table class="table mt-3">
+        <thead>
+          <tr>
+            <th>Amount</th>
+            <th>Description</th>
+            <th>Category</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="expense-list"></tbody>
+      </table>
+    </div>
+    <script>
+      function saveExpense(amount, description, category) {
+        fetch("/user", {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({ amount, description, category }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log("Expense Created", data);
+            addExpense(data);
+            //displayExpense();
+          })
+          .catch((error) => console.error("Error Saving Expense:", error));
+      }
+
+      function addExpense(expense) {
+        const expenseList = document.getElementById("expense-list");
+
+        const row = document.createElement("tr");
+        row.id = `expense-${expense.id}`;
+
+        const amountCell = document.createElement("td");
+        const descriptionCell = document.createElement("td");
+        const categoryCell = document.createElement("td");
+        const deleteCell = document.createElement("td");
+        const deleteButton = document.createElement("button");
+
+        amountCell.textContent = expense.amount;
+        descriptionCell.textContent = expense.description;
+        categoryCell.textContent = expense.category;
+
+        deleteButton.textContent = "Delete";
+        deleteButton.classList.add("btn", "btn-danger", "btn-sm");
+        deleteButton.addEventListener("click", () => {
+          deleteExpense(expense.id);
+        });
+
+        deleteCell.appendChild(deleteButton);
+        row.appendChild(amountCell);
+        row.appendChild(descriptionCell);
+        row.appendChild(categoryCell);
+        row.appendChild(deleteCell);
+        expenseList.appendChild(row);
+      }
+
+      function deleteExpense(id) {
+        fetch(`/user/${id}`, {
+          method: "DELETE",
+        })
+          .then(() => {
+            console.log("Expense Deleted");
+            removeExpense(id);
+            //displayExpense();
+          })
+          .catch((error) => console.error("Error deleting user:", error));
+      }
+
+      function removeExpense(id) {
+        const expenseElement = document.getElementById(`expense-${id}`);
+        if (expenseElement) {
+          expenseElement.remove();
+        }
+      }
+
+      function displayExpenses() {
+        const expenseList = document.getElementById("expense-list");
+        expenseList.innerHTML = "";
+
+        fetch("/user")
+          .then((response) => response.json())
+          .then((expenses) => {
+            // Sort expenses by category
+            expenses.sort((a, b) => a.category.localeCompare(b.category));
+
+            let previousCategory = null;
+
+            expenses.forEach((expense) => {
+              const row = document.createElement("tr");
+              row.id = `expense-${expense.id}`;
+
+              const amountCell = document.createElement("td");
+              const descriptionCell = document.createElement("td");
+              //const  = document.createElement("td");
+              const deleteCell = document.createElement("td");
+              const deleteButton = document.createElement("button");
+
+              amountCell.textContent = expense.amount;
+              descriptionCell.textContent = expense.description;
+              //categoryCell.textContent = expense.category;
+
+              deleteButton.textContent = "Delete";
+              deleteButton.classList.add("btn", "btn-danger", "btn-sm");
+              deleteButton.addEventListener("click", () => {
+                deleteExpense(expense.id);
+              });
+
+              deleteCell.appendChild(deleteButton);
+              row.appendChild(amountCell);
+              row.appendChild(descriptionCell);
+              //row.appendChild(categoryCell);
+              row.appendChild(deleteCell);
+
+              if (previousCategory !== expense.category) {
+                // Display the category name as a row
+                const categoryRow = document.createElement("tr");
+                const categoryCell = document.createElement("td");
+                categoryCell.colSpan = 4; // Span all columns
+                categoryCell.textContent = expense.category;
+                categoryCell.style.fontWeight = "bold";
+                categoryRow.appendChild(categoryCell);
+                expenseList.appendChild(categoryRow);
+                previousCategory = expense.category;
+              }
+
+              expenseList.appendChild(row);
+            });
+          })
+          .catch((error) => console.error("Error fetching expenses:", error));
+      }
+
+      const form = document.getElementById("expense-form");
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        const amountInput = parseFloat(amount.value);
+        const descriptionInput = description.value;
+        const categoryInput = category.value;
+
+        if (amount === "" || description === "" || category === "") {
+          alert("Please enter amount, description and category properly");
+          return;
+        }
+
+        saveExpense(amountInput, descriptionInput, categoryInput);
+        form.reset();
+
+        /*addExpense({
+          id: "",
+          amount: amountInput,
+          description: descriptionInput,
+          category: categoryInput,
+        });*/
+      });
+
+      displayExpenses();
+    </script>
+  </body>
+</html>
